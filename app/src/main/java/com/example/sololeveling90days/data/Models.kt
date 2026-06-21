@@ -178,3 +178,39 @@ data class DailySteps(
     val steps: Int
 )
 
+@Serializable
+data class Guild(
+    val id: String,
+    val name: String,
+    val description: String = "",
+    @kotlinx.serialization.SerialName("created_by") val createdBy: String? = null,
+    @kotlinx.serialization.SerialName("invite_code") val inviteCode: String
+)
+
+@Serializable
+data class GuildMember(
+    @kotlinx.serialization.SerialName("guild_id") val guildId: String,
+    @kotlinx.serialization.SerialName("user_id") val userId: String,
+    @kotlinx.serialization.SerialName("joined_at") val joinedAt: String? = null
+)
+
+@Serializable
+data class GuildMessage(
+    val id: String? = null,
+    @kotlinx.serialization.SerialName("guild_id") val guildId: String,
+    @kotlinx.serialization.SerialName("user_id") val userId: String,
+    @kotlinx.serialization.SerialName("sender_name") val senderName: String,
+    val message: String,
+    @kotlinx.serialization.SerialName("created_at") val createdAt: String? = null
+)
+
+@Serializable
+data class GuildLeaderboardEntry(
+    @kotlinx.serialization.SerialName("guild_id") val guildId: String,
+    @kotlinx.serialization.SerialName("user_id") val userId: String,
+    @kotlinx.serialization.SerialName("display_name") val displayName: String? = "Hunter",
+    val level: Int = 1,
+    val rank: String = "E-Class",
+    @kotlinx.serialization.SerialName("current_streak") val currentStreak: Int = 0,
+    @kotlinx.serialization.SerialName("weekly_xp") val weeklyXp: Int = 0
+)

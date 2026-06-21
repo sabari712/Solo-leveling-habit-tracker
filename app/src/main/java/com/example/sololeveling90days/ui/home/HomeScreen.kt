@@ -32,6 +32,7 @@ import com.example.sololeveling90days.ui.jogging.JoggingTrackerScreen
 import com.example.sololeveling90days.ui.profile.ProfileScreen
 import com.example.sololeveling90days.ui.quests.AddEditQuestBottomSheet
 import com.example.sololeveling90days.ui.stats.StatsScreen
+import com.example.sololeveling90days.ui.social.GuildScreen
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -68,7 +69,11 @@ fun HomeScreen(
                 )
                 1 -> StatsScreen(repository = repository)
                 2 -> JoggingTrackerScreen(repository = repository)
-                3 -> ProfileScreen(
+                3 -> GuildScreen(
+                    repository = repository,
+                    onNavigateToProfile = { selectedTab = 4 }
+                )
+                4 -> ProfileScreen(
                     repository = repository,
                     onBack = null,
                     onNavigate = onNavigate
@@ -200,7 +205,35 @@ private fun TodayTab(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "\u2B50 Bonus Quests",
+                                text = "⭐ Bonus Quests",
+                                color = textPrimary,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = textSecondary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigate(ToolsKey) },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+                        border = BorderStroke(1.dp, Color(0xFF2C2C2E))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "⚙️ Mini Tools Hub",
                                 color = textPrimary,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
@@ -319,6 +352,7 @@ private fun HomeBottomBar(
         NavItem("Today",   Icons.AutoMirrored.Outlined.List),
         NavItem("Stats",   Icons.Outlined.BarChart),
         NavItem("Jogging", Icons.Outlined.DirectionsRun),
+        NavItem("Guilds",  Icons.Outlined.Group),
         NavItem("Profile", Icons.Outlined.Person)
     )
 

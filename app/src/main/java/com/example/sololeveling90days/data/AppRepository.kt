@@ -16,6 +16,7 @@ class AppRepository(private val context: Context) {
 
     val authRepository = AuthRepository()
     val syncManager = SyncManager(context, authRepository)
+    val socialRepository = SocialRepository(authRepository)
     private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO + kotlinx.coroutines.SupervisorJob())
 
     val isGuestMode: Flow<Boolean> = context.dataStore.data.map { prefs ->
