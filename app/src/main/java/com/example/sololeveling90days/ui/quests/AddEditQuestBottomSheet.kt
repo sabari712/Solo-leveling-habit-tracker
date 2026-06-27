@@ -1,4 +1,5 @@
 package com.example.sololeveling90days.ui.quests
+import com.example.sololeveling90days.theme.*
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,9 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.sololeveling90days.data.Quest
-import com.example.sololeveling90days.data.QuestCategory
-import com.example.sololeveling90days.data.QuestDifficulty
+import com.example.sololeveling90days.data.*
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +31,10 @@ fun AddEditQuestBottomSheet(
     var selectedCategory by remember { mutableStateOf(QuestCategory.FITNESS) }
     var selectedDifficulty by remember { mutableStateOf(QuestDifficulty.NORMAL) }
     
+    // Exercise Linkage States
+    var selectedExerciseType by remember { mutableStateOf<ExerciseType?>(null) }
+    var targetReps by remember { mutableIntStateOf(10) }
+
     // Frequency variables
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     var selectedDays by remember { mutableStateOf(daysOfWeek.toSet()) } // Default to all days (Daily)
@@ -43,13 +46,13 @@ fun AddEditQuestBottomSheet(
 
     // Apple HIG style styling
     val appleBlue = Color(0xFF007AFF)
-    val secondaryBackground = Color(0xFF1C1C1E)
+    val secondaryBackground = DisciplineNavy
     val textPrimary = Color(0xFFE5E2E1)
     val textSecondary = Color(0xFFC4C6CC)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1C1C1E),
+        containerColor = DisciplineNavy,
         contentColor = textPrimary,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
@@ -76,7 +79,7 @@ fun AddEditQuestBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = appleBlue,
-                    unfocusedBorderColor = Color(0xFF38383A),
+                    unfocusedBorderColor = AppleBlue.copy(alpha = 0.15f),
                     focusedLabelColor = appleBlue,
                     unfocusedLabelColor = textSecondary,
                     focusedTextColor = textPrimary,
@@ -118,6 +121,83 @@ fun AddEditQuestBottomSheet(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )
+                        }
+                    }
+                }
+            }
+
+            if (selectedCategory == QuestCategory.FITNESS) {
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    text = "Link to Exercise for Camera Tracking",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = textSecondary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(ExerciseType.entries) { exercise ->
+                        val isSelected = exercise == selectedExerciseType
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isSelected) appleBlue else secondaryBackground)
+                                .clickable {
+                                    selectedExerciseType = exercise
+                                    if (title.isBlank() || ExerciseType.entries.any { it.label == title }) {
+                                        title = exercise.label
+                                    }
+                                    val def = getExerciseDefinition(exercise)
+                                    targetReps = def.defaultTargetReps
+                                }
+                                .padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = "${exercise.emoji} ${exercise.label}",
+                                color = if (isSelected) Color.White else textPrimary,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+
+                if (selectedExerciseType != null) {
+                    Spacer(Modifier.height(16.dp))
+                    val definition = getExerciseDefinition(selectedExerciseType!!)
+                    val unit = if (definition.trackingMethod == TrackingMethod.TIMED_HOLD) "seconds" else "reps"
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Target ($unit)",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            color = textSecondary
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(onClick = { if (targetReps > 1) targetReps -= 1 }) {
+                                Text("-", color = appleBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Text(
+                                text = targetReps.toString(),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                            IconButton(onClick = { targetReps += 1 }) {
+                                Text("+", color = appleBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
@@ -290,12 +370,20 @@ fun AddEditQuestBottomSheet(
                         val newQuest = Quest(
                             id = UUID.randomUUID().toString(),
                             title = title,
-                            description = "Reminder: $formattedTime | Frequency: ${if (selectedDays.size == 7) "Daily" else selectedDays.joinToString(", ")}",
+                            description = if (selectedCategory == QuestCategory.FITNESS && selectedExerciseType != null) {
+                                val def = getExerciseDefinition(selectedExerciseType!!)
+                                val unit = if (def.trackingMethod == TrackingMethod.TIMED_HOLD) "seconds" else "reps"
+                                "$targetReps $unit - ${def.instructions}"
+                            } else {
+                                "Reminder: $formattedTime | Frequency: ${if (selectedDays.size == 7) "Daily" else selectedDays.joinToString(", ")}"
+                            },
                             xpReward = baseXP,
                             category = selectedCategory,
                             difficulty = selectedDifficulty,
                             isCompleted = false,
-                            isActive = true
+                            isActive = true,
+                            exerciseType = selectedExerciseType,
+                            targetReps = if (selectedCategory == QuestCategory.FITNESS && selectedExerciseType != null) targetReps else 0
                         )
                         onSave(newQuest)
                     }
@@ -308,7 +396,7 @@ fun AddEditQuestBottomSheet(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = appleBlue,
                     contentColor = Color.White,
-                    disabledContainerColor = Color(0xFF2C2C2E),
+                    disabledContainerColor = AppleBlue.copy(alpha = 0.15f),
                     disabledContentColor = textSecondary.copy(alpha = 0.5f)
                 )
             ) {

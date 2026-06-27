@@ -6,25 +6,25 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 
 // --- Static Color Constants ---
-val StaticDarkBg = Color(0xFF000000)
+val StaticDarkBg = Color(0xFF000000) // OLED Obsidian Black
 val StaticLightBg = Color(0xFFFFFFFF)
-val StaticDisciplineNavy = Color(0xFF1C1C1E)
+val StaticDisciplineNavy = Color(0xFF1C1C1E) // Frosted Slate Surface
 val StaticLightSecondary = Color(0xFFF2F2F7)
-val StaticAppleBlueDark = Color(0xFF0A84FF)
-val StaticAppleBlueLight = Color(0xFF007AFF)
+val StaticAppleBlueDark = Color(0xFF0A84FF) // Electric Blue
+val StaticAppleBlueLight = Color(0xFF0A84FF)
 
 // 10% Semantic Status Colors
-val StaticSuccessGreenDark = Color(0xFF30D158)
-val StaticSuccessGreenLight = Color(0xFF34C759)
-val StaticHardRedDark = Color(0xFFFF453A)
-val StaticHardRedLight = Color(0xFFFF3B30)
-val StaticActionOrangeDark = Color(0xFFFF9F0A)
-val StaticActionOrangeLight = Color(0xFFFF9500)
+val StaticSuccessGreenDark = Color(0xFF10B981) // Growth Emerald
+val StaticSuccessGreenLight = Color(0xFF10B981)
+val StaticHardRedDark = Color(0xFFEF4444) // Crimson Red (Warning / threat)
+val StaticHardRedLight = Color(0xFFEF4444)
+val StaticActionOrangeDark = Color(0xFF7C3AED) // Shadow Violet / Purple
+val StaticActionOrangeLight = Color(0xFF7C3AED)
 
 // Text Colors
-val StaticTextPrimaryDark = Color(0xFFFFFFFF)
+val StaticTextPrimaryDark = Color(0xFFE4E2E4)
 val StaticTextPrimaryLight = Color(0xFF000000)
-val StaticTextSecondaryDark = Color(0x99EBEBF5)
+val StaticTextSecondaryDark = Color(0xFFC0C6D6)
 val StaticTextSecondaryLight = Color(0x993C3C43)
 
 // --- Dynamic @Composable Colors ---
@@ -112,22 +112,22 @@ val PrimaryPurpleDark: Color
 val XPGold: Color
     @Composable
     @ReadOnlyComposable
-    get() = AppleBlue
+    get() = if (isSystemInDarkTheme()) Color(0xFFFACC15) else Color(0xFFE5A900)
 
 val XPGoldLight: Color
     @Composable
     @ReadOnlyComposable
-    get() = AppleBlue
+    get() = Color(0xFFE5A900)
 
 val XPGoldDark: Color
     @Composable
     @ReadOnlyComposable
-    get() = if (isSystemInDarkTheme()) Color(0xFF004499) else Color(0xFF0055BB)
+    get() = Color(0xFFFACC15)
 
 val LevelUpGold: Color
     @Composable
     @ReadOnlyComposable
-    get() = AppleBlue
+    get() = if (isSystemInDarkTheme()) Color(0xFFFACC15) else Color(0xFFE5A900)
 
 val FireOrange: Color
     @Composable

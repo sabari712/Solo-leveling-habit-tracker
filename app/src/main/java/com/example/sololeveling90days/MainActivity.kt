@@ -20,12 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.sololeveling90days.data.AppRepository
+import com.example.sololeveling90days.data.SoundManager
 import com.example.sololeveling90days.notification.NotificationHelper
 import com.example.sololeveling90days.notification.NotificationScheduler
 import com.example.sololeveling90days.theme.SoloLeveling90DaysTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity(), SensorEventListener {
+
+    override fun onDestroy() {
+        super.onDestroy()
+        SoundManager.shutdown()
+    }
 
     private var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
@@ -45,6 +51,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         enableEdgeToEdge()
 
         repository = AppRepository(applicationContext)
+        SoundManager.init(applicationContext)
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 

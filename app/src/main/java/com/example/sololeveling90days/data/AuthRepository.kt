@@ -29,6 +29,14 @@ class AuthRepository {
     }
 
 
+    suspend fun verifyOtp(email: String, code: String) {
+        auth.verifyEmailOtp(
+            type = io.github.jan.supabase.auth.OtpType.Email.SIGNUP,
+            email = email,
+            token = code
+        )
+    }
+
     suspend fun signIn(email: String, password: String) {
         auth.signInWith(Email) {
             this.email = email

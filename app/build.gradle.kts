@@ -121,5 +121,16 @@ dependencies {
   implementation(libs.supabase.auth)
   implementation(libs.supabase.realtime)
   implementation(libs.ktor.client.okhttp)
+
+  // ML Kit Pose Detection (Accurate SDK - industry-grade joint tracking)
+  implementation("com.google.mlkit:pose-detection-accurate:18.0.0-beta5")
+
+  // CameraX for camera integration
+  val cameraxVersion = "1.4.0"
+  implementation("androidx.camera:camera-core:$cameraxVersion")
+  implementation("androidx.camera:camera-camera2:$cameraxVersion")
+  implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+  implementation("androidx.camera:camera-view:$cameraxVersion")
+  implementation("androidx.camera:camera-mlkit-vision:$cameraxVersion")
 }
 

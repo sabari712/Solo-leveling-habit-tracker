@@ -39,6 +39,7 @@ import com.example.sololeveling90days.data.*
 import com.example.sololeveling90days.theme.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -167,346 +168,120 @@ fun GuildScreen(
                     color = AppleBlue,
                     modifier = Modifier.align(Alignment.Center)
                 )
-            } else if (!isAuthenticated) {
-                // Locked screen for guest mode
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(90.dp)
-                            .background(AppleBlue.copy(alpha = 0.1f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Lock,
-                            contentDescription = null,
-                            tint = AppleBlue,
-                            modifier = Modifier.size(44.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "Guild Feature Locked",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Connect with other hunters, join private guilds, share daily accountability, and compete on the weekly leaderboard by registering an account.",
-                        fontSize = 15.sp,
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 22.sp,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    Button(
-                        onClick = onNavigateToProfile,
-                        colors = ButtonDefaults.buttonColors(containerColor = AppleBlue),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                    ) {
-                        Text(
-                            text = "Log In or Register",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            } else if (guild == null) {
-                // Join/Create options screen
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .background(AppleBlue.copy(alpha = 0.1f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Group,
-                            contentDescription = null,
-                            tint = AppleBlue,
-                            modifier = Modifier.size(34.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = if (isCreateMode) "Found a Guild" else "Join a Guild",
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    
-                    Text(
-                        text = if (isCreateMode) "Assemble your ultimate raid team to grind habits together." else "Grind habits alongside other hunters for maximum synergy.",
-                        fontSize = 14.sp,
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, Color(0xFF2C2C2E))
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            if (isCreateMode) {
-                                // Create Form
-                                OutlinedTextField(
-                                    value = guildName,
-                                    onValueChange = { guildName = it; actionError = null },
-                                    label = { Text("Guild Name") },
-                                    singleLine = true,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = AppleBlue,
-                                        cursorColor = AppleBlue,
-                                        focusedTextColor = TextPrimary,
-                                        unfocusedTextColor = TextPrimary,
-                                        focusedLabelColor = AppleBlue
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-
-                                OutlinedTextField(
-                                    value = guildDesc,
-                                    onValueChange = { guildDesc = it },
-                                    label = { Text("Guild Description") },
-                                    maxLines = 3,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = AppleBlue,
-                                        cursorColor = AppleBlue,
-                                        focusedTextColor = TextPrimary,
-                                        unfocusedTextColor = TextPrimary,
-                                        focusedLabelColor = AppleBlue
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            } else {
-                                // Join Form
-                                OutlinedTextField(
-                                    value = inviteCode,
-                                    onValueChange = { inviteCode = it.uppercase(); actionError = null },
-                                    label = { Text("6-Character Invite Code") },
-                                    placeholder = { Text("e.g. G2H4AX") },
-                                    singleLine = true,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = AppleBlue,
-                                        cursorColor = AppleBlue,
-                                        focusedTextColor = TextPrimary,
-                                        unfocusedTextColor = TextPrimary,
-                                        focusedLabelColor = AppleBlue
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-
-                            if (actionError != null) {
-                                Text(
-                                    text = actionError!!,
-                                    color = HardRed,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-
-                            Button(
-                                onClick = {
-                                    if (isCreateMode) {
-                                        if (guildName.isBlank()) {
-                                            actionError = "Guild name cannot be blank."
-                                            return@Button
-                                        }
-                                        actionLoading = true
-                                        scope.launch {
-                                            val created = socialRepository.createGuild(guildName, guildDesc)
-                                            if (created != null) {
-                                                guild = created
-                                                members = socialRepository.getGuildLeaderboard(created.id)
-                                                messages = socialRepository.getGuildMessages(created.id)
-                                            } else {
-                                                actionError = "Failed to create guild. Name might already be taken."
-                                            }
-                                            actionLoading = false
-                                        }
-                                    } else {
-                                        if (inviteCode.isBlank()) {
-                                            actionError = "Please enter an invite code."
-                                            return@Button
-                                        }
-                                        actionLoading = true
-                                        scope.launch {
-                                            val success = socialRepository.joinGuild(inviteCode)
-                                            if (success) {
-                                                val fetchedGuild = socialRepository.getCurrentGuild()
-                                                guild = fetchedGuild
-                                                if (fetchedGuild != null) {
-                                                    members = socialRepository.getGuildLeaderboard(fetchedGuild.id)
-                                                    messages = socialRepository.getGuildMessages(fetchedGuild.id)
-                                                }
-                                            } else {
-                                                actionError = "Guild not found. Double-check your code."
-                                            }
-                                            actionLoading = false
-                                        }
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = AppleBlue),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp),
-                                enabled = !actionLoading
-                            ) {
-                                if (actionLoading) {
-                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                                } else {
-                                    Text(
-                                        text = if (isCreateMode) "Create Guild" else "Join Guild",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Text(
-                        text = if (isCreateMode) "Want to join an existing guild? Join here" else "Want to start your own guild? Create here",
-                        color = AppleBlue,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier
-                            .clickable {
-                                isCreateMode = !isCreateMode
-                                actionError = null
-                            }
-                            .padding(8.dp)
-                    )
-                }
             } else {
-                // Guild Dashboard
+                val hasGuild = isAuthenticated && guild != null
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Small Guild Card at top
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, Color(0xFF2C2C2E))
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = guild?.description?.ifBlank { "No description provided." } ?: "",
-                                        color = TextSecondary,
-                                        fontSize = 13.sp,
-                                        lineHeight = 18.sp
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.width(16.dp))
-                                
-                                // Invite Code Badge
-                                Column(
-                                    horizontalAlignment = Alignment.End,
-                                    modifier = Modifier.clickable {
-                                        clipboardManager.setText(AnnotatedString(guild?.inviteCode ?: ""))
-                                    }
+                    
+                    // Header (only if they have a guild)
+                    if (hasGuild) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 8.dp),
+                            colors = CardDefaults.cardColors(containerColor = DisciplineNavy),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, AppleBlue.copy(alpha = 0.15f))
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Invite Code", color = TextSecondary, fontSize = 10.sp)
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = guild?.inviteCode ?: "",
-                                            color = AppleBlue,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp
+                                            text = guild?.description?.ifBlank { "No description provided." } ?: "",
+                                            color = TextSecondary,
+                                            fontSize = 13.sp,
+                                            lineHeight = 18.sp
                                         )
-                                        Spacer(Modifier.width(4.dp))
-                                        Icon(
-                                            imageVector = Icons.Filled.ContentCopy,
-                                            contentDescription = "Copy",
-                                            tint = AppleBlue,
-                                            modifier = Modifier.size(14.dp)
-                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    
+                                    Column(
+                                        horizontalAlignment = Alignment.End,
+                                        modifier = Modifier.clickable {
+                                            clipboardManager.setText(AnnotatedString(guild?.inviteCode ?: ""))
+                                        }
+                                    ) {
+                                        Text("Invite Code", color = TextSecondary, fontSize = 10.sp)
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = guild?.inviteCode ?: "",
+                                                color = AppleBlue,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp
+                                            )
+                                            Spacer(Modifier.width(4.dp))
+                                            Icon(
+                                                imageVector = Icons.Filled.ContentCopy,
+                                                contentDescription = "Copy",
+                                                tint = AppleBlue,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-                    // Tab bar
                     TabRow(
                         selectedTabIndex = activeTab,
                         containerColor = DarkBg,
                         contentColor = AppleBlue,
                         indicator = { tabPositions ->
-                            TabRowDefaults.Indicator(
-                                modifier = Modifier.tabIndicatorOffset(tabPositions[activeTab]),
-                                color = AppleBlue
-                            )
+                            if (activeTab < tabPositions.size) {
+                                TabRowDefaults.Indicator(
+                                    modifier = Modifier.tabIndicatorOffset(tabPositions[activeTab]),
+                                    color = AppleBlue
+                                )
+                            }
                         },
                         divider = {
-                            HorizontalDivider(color = Color(0xFF2C2C2E))
+                            HorizontalDivider(color = AppleBlue.copy(alpha = 0.15f))
                         }
                     ) {
-                        Tab(
-                            selected = activeTab == 0,
-                            onClick = { activeTab = 0 },
-                            text = { Text("Members", fontWeight = FontWeight.Bold) },
-                            icon = { Icon(Icons.Outlined.Group, contentDescription = null) }
-                        )
-                        Tab(
-                            selected = activeTab == 1,
-                            onClick = { activeTab = 1 },
-                            text = { Text("Leaderboard", fontWeight = FontWeight.Bold) },
-                            icon = { Icon(Icons.Outlined.Leaderboard, contentDescription = null) }
-                        )
-                        Tab(
-                            selected = activeTab == 2,
-                            onClick = { activeTab = 2 },
-                            text = { Text("Chat", fontWeight = FontWeight.Bold) },
-                            icon = { Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null) }
-                        )
+                        if (!hasGuild) {
+                            Tab(
+                                selected = activeTab == 0,
+                                onClick = { activeTab = 0 },
+                                text = { Text("Guild Portal", fontWeight = FontWeight.Bold) },
+                                icon = { Icon(Icons.Outlined.Group, contentDescription = null) }
+                            )
+                            Tab(
+                                selected = activeTab == 1,
+                                onClick = { activeTab = 1 },
+                                text = { Text("Dungeons", fontWeight = FontWeight.Bold) },
+                                icon = { Icon(Icons.Filled.Shield, contentDescription = null) }
+                            )
+                        } else {
+                            Tab(
+                                selected = activeTab == 0,
+                                onClick = { activeTab = 0 },
+                                text = { Text("Members", fontWeight = FontWeight.Bold) },
+                                icon = { Icon(Icons.Outlined.Group, contentDescription = null) }
+                            )
+                            Tab(
+                                selected = activeTab == 1,
+                                onClick = { activeTab = 1 },
+                                text = { Text("Leaderboard", fontWeight = FontWeight.Bold) },
+                                icon = { Icon(Icons.Outlined.Leaderboard, contentDescription = null) }
+                            )
+                            Tab(
+                                selected = activeTab == 2,
+                                onClick = { activeTab = 2 },
+                                text = { Text("Chat", fontWeight = FontWeight.Bold) },
+                                icon = { Icon(Icons.Filled.ChatBubbleOutline, contentDescription = null) }
+                            )
+                            Tab(
+                                selected = activeTab == 3,
+                                onClick = { activeTab = 3 },
+                                text = { Text("Dungeons", fontWeight = FontWeight.Bold) },
+                                icon = { Icon(Icons.Filled.Shield, contentDescription = null) }
+                            )
+                        }
                     }
 
                     Box(
@@ -514,51 +289,287 @@ fun GuildScreen(
                             .weight(1f)
                             .fillMaxWidth()
                     ) {
-                        when (activeTab) {
-                            0 -> MembersTab(
-                                members = members,
-                                currentUserId = authRepository.currentUserId() ?: "",
-                                onLeaveGuild = {
-                                    scope.launch {
-                                        isLoading = true
-                                        val left = socialRepository.leaveGuild()
-                                        if (left) {
-                                            guild = null
+                        if (!hasGuild) {
+                            when (activeTab) {
+                                0 -> {
+                                    if (!isAuthenticated) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(24.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(90.dp)
+                                                    .background(AppleBlue.copy(alpha = 0.1f), CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Lock,
+                                                    contentDescription = null,
+                                                    tint = AppleBlue,
+                                                    modifier = Modifier.size(44.dp)
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(24.dp))
+                                            Text(
+                                                text = "Guild Portal Locked",
+                                                fontSize = 24.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = TextPrimary,
+                                                textAlign = TextAlign.Center
+                                            )
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                            Text(
+                                                text = "Connect with other hunters, join private guilds, share daily accountability, and compete on the weekly leaderboard by registering an account.",
+                                                fontSize = 15.sp,
+                                                color = TextSecondary,
+                                                textAlign = TextAlign.Center,
+                                                lineHeight = 22.sp,
+                                                modifier = Modifier.padding(horizontal = 16.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(32.dp))
+                                            Button(
+                                                onClick = onNavigateToProfile,
+                                                colors = ButtonDefaults.buttonColors(containerColor = AppleBlue),
+                                                shape = RoundedCornerShape(12.dp),
+                                                modifier = Modifier.fillMaxWidth().height(50.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Log In or Register",
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
+                                            }
                                         }
-                                        isLoading = false
-                                    }
-                                }
-                            )
-                            1 -> LeaderboardTab(
-                                members = members,
-                                currentUserId = authRepository.currentUserId() ?: ""
-                            )
-                            2 -> ChatTab(
-                                messages = messages,
-                                currentUserId = authRepository.currentUserId() ?: "",
-                                chatText = chatMessageText,
-                                onChatTextChange = { chatMessageText = it },
-                                onSendMessage = {
-                                    if (chatMessageText.isNotBlank()) {
-                                        isSendingMsg = true
-                                        val text = chatMessageText
-                                        chatMessageText = ""
-                                        scope.launch {
-                                            val sent = socialRepository.sendGuildMessage(guild!!.id, text)
-                                            if (sent) {
-                                                messages = socialRepository.getGuildMessages(guild!!.id)
-                                                // Scroll to bottom
-                                                if (messages.isNotEmpty()) {
-                                                    lazyListState.animateScrollToItem(messages.lastIndex)
+                                    } else {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(24.dp)
+                                                .verticalScroll(rememberScrollState()),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(70.dp)
+                                                    .background(AppleBlue.copy(alpha = 0.1f), CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Group,
+                                                    contentDescription = null,
+                                                    tint = AppleBlue,
+                                                    modifier = Modifier.size(34.dp)
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                text = if (isCreateMode) "Found a Guild" else "Join a Guild",
+                                                fontSize = 26.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = TextPrimary
+                                            )
+                                            Text(
+                                                text = if (isCreateMode) "Assemble your ultimate raid team to grind habits together." else "Grind habits alongside other hunters for maximum synergy.",
+                                                fontSize = 14.sp,
+                                                color = TextSecondary,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier.padding(vertical = 8.dp)
+                                            )
+                                            Spacer(modifier = Modifier.height(24.dp))
+                                            Card(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                colors = CardDefaults.cardColors(containerColor = DisciplineNavy),
+                                                shape = RoundedCornerShape(16.dp),
+                                                border = BorderStroke(1.dp, AppleBlue.copy(alpha = 0.15f))
+                                            ) {
+                                                Column(
+                                                    modifier = Modifier.padding(20.dp),
+                                                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                                                ) {
+                                                    if (isCreateMode) {
+                                                        OutlinedTextField(
+                                                            value = guildName,
+                                                            onValueChange = { guildName = it; actionError = null },
+                                                            label = { Text("Guild Name") },
+                                                            singleLine = true,
+                                                            colors = OutlinedTextFieldDefaults.colors(
+                                                                focusedBorderColor = AppleBlue,
+                                                                cursorColor = AppleBlue,
+                                                                focusedTextColor = TextPrimary,
+                                                                unfocusedTextColor = TextPrimary,
+                                                                focusedLabelColor = AppleBlue
+                                                            ),
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        )
+                                                        OutlinedTextField(
+                                                            value = guildDesc,
+                                                            onValueChange = { guildDesc = it },
+                                                            label = { Text("Guild Description") },
+                                                            maxLines = 3,
+                                                            colors = OutlinedTextFieldDefaults.colors(
+                                                                focusedBorderColor = AppleBlue,
+                                                                cursorColor = AppleBlue,
+                                                                focusedTextColor = TextPrimary,
+                                                                unfocusedTextColor = TextPrimary,
+                                                                focusedLabelColor = AppleBlue
+                                                            ),
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        )
+                                                    } else {
+                                                        OutlinedTextField(
+                                                            value = inviteCode,
+                                                            onValueChange = { inviteCode = it.uppercase(); actionError = null },
+                                                            label = { Text("6-Character Invite Code") },
+                                                            placeholder = { Text("e.g. G2H4AX") },
+                                                            singleLine = true,
+                                                            colors = OutlinedTextFieldDefaults.colors(
+                                                                focusedBorderColor = AppleBlue,
+                                                                cursorColor = AppleBlue,
+                                                                focusedTextColor = TextPrimary,
+                                                                unfocusedTextColor = TextPrimary,
+                                                                focusedLabelColor = AppleBlue
+                                                            ),
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        )
+                                                    }
+                                                    if (actionError != null) {
+                                                        Text(
+                                                            text = actionError!!,
+                                                            color = HardRed,
+                                                            fontSize = 14.sp,
+                                                            modifier = Modifier.fillMaxWidth()
+                                                        )
+                                                    }
+                                                    Button(
+                                                        onClick = {
+                                                            if (isCreateMode) {
+                                                                if (guildName.isBlank()) {
+                                                                    actionError = "Guild name cannot be blank."
+                                                                    return@Button
+                                                                }
+                                                                actionLoading = true
+                                                                scope.launch {
+                                                                    val created = socialRepository.createGuild(guildName, guildDesc)
+                                                                    if (created != null) {
+                                                                        guild = created
+                                                                        members = socialRepository.getGuildLeaderboard(created.id)
+                                                                        messages = socialRepository.getGuildMessages(created.id)
+                                                                    } else {
+                                                                        actionError = "Failed to create guild. Name might already be taken."
+                                                                    }
+                                                                    actionLoading = false
+                                                                }
+                                                            } else {
+                                                                if (inviteCode.isBlank()) {
+                                                                    actionError = "Please enter an invite code."
+                                                                    return@Button
+                                                                }
+                                                                actionLoading = true
+                                                                scope.launch {
+                                                                    val success = socialRepository.joinGuild(inviteCode)
+                                                                    if (success) {
+                                                                        val fetchedGuild = socialRepository.getCurrentGuild()
+                                                                        guild = fetchedGuild
+                                                                        if (fetchedGuild != null) {
+                                                                            members = socialRepository.getGuildLeaderboard(fetchedGuild.id)
+                                                                            messages = socialRepository.getGuildMessages(fetchedGuild.id)
+                                                                        }
+                                                                    } else {
+                                                                        actionError = "Guild not found. Double-check your code."
+                                                                    }
+                                                                    actionLoading = false
+                                                                }
+                                                            }
+                                                        },
+                                                        colors = ButtonDefaults.buttonColors(containerColor = AppleBlue),
+                                                        shape = RoundedCornerShape(12.dp),
+                                                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                                                        enabled = !actionLoading
+                                                    ) {
+                                                        if (actionLoading) {
+                                                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                                                        } else {
+                                                            Text(
+                                                                text = if (isCreateMode) "Create Guild" else "Join Guild",
+                                                                fontWeight = FontWeight.Bold,
+                                                                fontSize = 16.sp
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
-                                            isSendingMsg = false
+                                            Spacer(modifier = Modifier.height(20.dp))
+                                            Text(
+                                                text = if (isCreateMode) "Want to join an existing guild? Join here" else "Want to start your own guild? Create here",
+                                                color = AppleBlue,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                modifier = Modifier
+                                                    .clickable {
+                                                        isCreateMode = !isCreateMode
+                                                        actionError = null
+                                                    }
+                                                    .padding(8.dp)
+                                            )
                                         }
                                     }
-                                },
-                                isSending = isSendingMsg,
-                                listState = lazyListState
-                            )
+                                }
+                                1 -> DungeonGatesTab(repository = repository)
+                            }
+                        } else {
+                            when (activeTab) {
+                                0 -> MembersTab(
+                                    members = members,
+                                    currentUserId = authRepository.currentUserId() ?: "",
+                                    onLeaveGuild = {
+                                        scope.launch {
+                                            isLoading = true
+                                            val left = socialRepository.leaveGuild()
+                                            if (left) {
+                                                guild = null
+                                                activeTab = 0
+                                            }
+                                            isLoading = false
+                                        }
+                                    }
+                                )
+                                1 -> LeaderboardTab(
+                                    members = members,
+                                    currentUserId = authRepository.currentUserId() ?: ""
+                                )
+                                2 -> ChatTab(
+                                    messages = messages,
+                                    currentUserId = authRepository.currentUserId() ?: "",
+                                    chatText = chatMessageText,
+                                    onChatTextChange = { chatMessageText = it },
+                                    onSendMessage = {
+                                        if (chatMessageText.isNotBlank()) {
+                                            isSendingMsg = true
+                                            val text = chatMessageText
+                                            chatMessageText = ""
+                                            scope.launch {
+                                                val sent = socialRepository.sendGuildMessage(guild!!.id, text)
+                                                if (sent) {
+                                                    messages = socialRepository.getGuildMessages(guild!!.id)
+                                                    if (messages.isNotEmpty()) {
+                                                        lazyListState.animateScrollToItem(messages.lastIndex)
+                                                    }
+                                                }
+                                                isSendingMsg = false
+                                            }
+                                        }
+                                    },
+                                    isSending = isSendingMsg,
+                                    listState = lazyListState
+                                )
+                                3 -> DungeonGatesTab(repository = repository)
+                            }
                         }
                     }
                 }
@@ -585,10 +596,10 @@ private fun MembersTab(
                 val isMe = member.userId == currentUserId
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+                    colors = CardDefaults.cardColors(containerColor = DisciplineNavy),
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (isMe) AppleBlue.copy(alpha = 0.5f) else Color(0xFF2C2C2E)
+                        color = if (isMe) AppleBlue.copy(alpha = 0.5f) else AppleBlue.copy(alpha = 0.15f)
                     ),
                     shape = RoundedCornerShape(14.dp)
                 ) {
@@ -645,7 +656,7 @@ private fun MembersTab(
             }
         }
 
-        Divider(color = Color(0xFF2C2C2E))
+        Divider(color = AppleBlue.copy(alpha = 0.15f))
 
         // Leave Guild Button
         Box(
@@ -715,10 +726,10 @@ private fun LeaderboardTab(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+                colors = CardDefaults.cardColors(containerColor = DisciplineNavy),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = if (isMe) AppleBlue.copy(alpha = 0.5f) else Color(0xFF2C2C2E)
+                    color = if (isMe) AppleBlue.copy(alpha = 0.5f) else AppleBlue.copy(alpha = 0.15f)
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -733,7 +744,7 @@ private fun LeaderboardTab(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(CircleShape)
-                                .background(if (positionColor != Color.Transparent) positionColor else Color(0xFF2C2C2E)),
+                                .background(if (positionColor != Color.Transparent) positionColor else AppleBlue.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -824,7 +835,7 @@ private fun ChatTab(
 
         // Input bar
         Surface(
-            color = Color(0xFF1C1C1E),
+            color = DisciplineNavy,
             tonalElevation = 4.dp,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -848,7 +859,7 @@ private fun ChatTab(
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
                         focusedBorderColor = AppleBlue,
-                        unfocusedBorderColor = Color(0xFF2C2C2E)
+                        unfocusedBorderColor = AppleBlue.copy(alpha = 0.15f)
                     ),
                     modifier = Modifier
                         .weight(1f)
@@ -860,7 +871,7 @@ private fun ChatTab(
                     enabled = chatText.isNotBlank() && !isSending,
                     modifier = Modifier
                         .size(48.dp)
-                        .background(if (chatText.isNotBlank()) AppleBlue else Color(0xFF2C2C2E), CircleShape)
+                        .background(if (chatText.isNotBlank()) AppleBlue else AppleBlue.copy(alpha = 0.15f), CircleShape)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Send,
@@ -900,7 +911,7 @@ private fun ChatBubble(message: GuildMessage, isMe: Boolean) {
                         bottomEnd = if (isMe) 2.dp else 16.dp
                     )
                 )
-                .background(if (isMe) AppleBlue else Color(0xFF2C2C2E))
+                .background(if (isMe) AppleBlue else AppleBlue.copy(alpha = 0.15f))
                 .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Text(
@@ -908,6 +919,212 @@ private fun ChatBubble(message: GuildMessage, isMe: Boolean) {
                 color = Color.White,
                 fontSize = 14.sp
             )
+        }
+    }
+}
+
+@Composable
+fun DungeonGatesTab(repository: AppRepository) {
+    val activeDungeons by repository.activeDungeons.collectAsStateWithLifecycle(initialValue = emptyList())
+    var selectedDungeon by remember { mutableStateOf<DungeonRaid?>(null) }
+    var combatLogLines by remember { mutableStateOf<List<String>>(emptyList()) }
+    var isSimulatingBattle by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+
+    if (selectedDungeon != null) {
+        AlertDialog(
+            onDismissRequest = { if (!isSimulatingBattle) selectedDungeon = null },
+            title = {
+                Text(
+                    text = selectedDungeon!!.name.uppercase(),
+                    color = AppleBlue,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    val bossPercent = if (isSimulatingBattle) {
+                        if (combatLogLines.any { it.contains("Victory") }) 0f else 0.5f
+                    } else if (selectedDungeon!!.isDefeated) {
+                        0f
+                    } else {
+                        1f
+                    }
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("BOSS: ${selectedDungeon!!.bossName}", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(if (bossPercent > 0f) "${selectedDungeon!!.bossMaxHp} HP" else "DEFEATED", color = if (bossPercent > 0f) HardRed else AppleBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = bossPercent,
+                            color = if (bossPercent > 0.3f) HardRed else Color.Red,
+                            trackColor = Color.White.copy(alpha = 0.1f),
+                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp))
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .background(Color.Black)
+                            .border(BorderStroke(1.dp, AppleBlue.copy(alpha = 0.3f)))
+                            .padding(8.dp)
+                    ) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            val activeLogs = if (isSimulatingBattle) combatLogLines else selectedDungeon!!.combatLogs
+                            items(activeLogs.size) { index ->
+                                Text(
+                                    text = activeLogs[index],
+                                    color = if (activeLogs[index].startsWith("🏆") || activeLogs[index].startsWith("💰")) Color(0xFFF59E0B) else if (activeLogs[index].startsWith("──")) AppleBlue else Color.White,
+                                    fontSize = 11.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                if (selectedDungeon!!.isDefeated) {
+                    TextButton(onClick = { selectedDungeon = null }) {
+                        Text("Close Portal", color = AppleBlue)
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    isSimulatingBattle = true
+                                    combatLogLines = emptyList()
+
+                                    val result = repository.executeDungeonRaid(selectedDungeon!!.id)
+                                    if (result != null) {
+                                        result.combatLogs.forEach { line ->
+                                            combatLogLines = combatLogLines + line
+                                            delay(350)
+                                            if (combatLogLines.isNotEmpty()) {
+                                                listState.animateScrollToItem(combatLogLines.lastIndex)
+                                            }
+                                        }
+                                        selectedDungeon = result
+                                    }
+                                    isSimulatingBattle = false
+                                }
+                            },
+                            enabled = !isSimulatingBattle,
+                            colors = ButtonDefaults.buttonColors(containerColor = AppleBlue),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            if (isSimulatingBattle) {
+                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp))
+                            } else {
+                                Text("Enter Gate", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        TextButton(
+                            onClick = { selectedDungeon = null },
+                            enabled = !isSimulatingBattle
+                        ) {
+                            Text("Retreat", color = TextSecondary)
+                        }
+                    }
+                }
+            },
+            containerColor = DarkBg,
+            shape = RoundedCornerShape(0.dp)
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp)
+    ) {
+        Text(
+            text = "DUNGEON RAID GATES",
+            color = TextPrimary,
+            fontWeight = FontWeight.Black,
+            fontSize = 16.sp,
+            letterSpacing = 1.sp
+        )
+        Text(
+            text = "Raid high-tier gates asynchronously with your extracted Shadows. Gates reset daily.",
+            color = TextSecondary,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(activeDungeons) { dungeon ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        selectedDungeon = dungeon
+                        combatLogLines = emptyList()
+                    },
+                    shape = RoundedCornerShape(0.dp),
+                    colors = CardDefaults.cardColors(containerColor = DisciplineNavy),
+                    border = BorderStroke(1.dp, if (dungeon.isDefeated) AppleBlue.copy(alpha = 0.2f) else Color.Red.copy(alpha = 0.3f))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(dungeon.name, color = TextPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                Text("Rank: ${dungeon.rank}  |  Boss: ${dungeon.bossName}", color = TextSecondary, fontSize = 12.sp)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (dungeon.isDefeated) AppleBlue.copy(alpha = 0.2f) else Color.Red.copy(alpha = 0.2f))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = if (dungeon.isDefeated) "CLEARED" else "ACTIVE",
+                                    color = if (dungeon.isDefeated) AppleBlue else Color.Red,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text("💰 +${dungeon.goldReward} G", color = Color(0xFFF59E0B), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("✨ +${dungeon.xpReward} XP", color = AppleBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Text(
+                                text = if (dungeon.isDefeated) "View Log" else "Enter Gate ⚔️",
+                                color = if (dungeon.isDefeated) TextSecondary else AppleBlue,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 package com.example.sololeveling90days.ui.stats
+import com.example.sololeveling90days.theme.*
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sololeveling90days.data.AppRepository
+import com.example.sololeveling90days.data.UserProfile
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.foundation.BorderStroke
 import com.example.sololeveling90days.theme.DarkBg
 import com.example.sololeveling90days.theme.DisciplineNavy
 import com.example.sololeveling90days.theme.TextPrimary
@@ -32,6 +36,7 @@ fun StatsScreen(
 ) {
     val completionsMap by repository.questCompletions.collectAsStateWithLifecycle(emptyMap())
     val stepsList by repository.dailySteps.collectAsStateWithLifecycle(emptyList())
+    val profile by repository.userProfile.collectAsStateWithLifecycle(initialValue = UserProfile())
 
     val systemBackground = DarkBg
     val secondaryBackground = DisciplineNavy
@@ -85,11 +90,15 @@ fun StatsScreen(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
+        // Attribute Radar Chart
+        AttributeRadarChart(profile = profile)
+
         // Steps Summary Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = secondaryBackground)
+            shape = RoundedCornerShape(0.dp),
+            colors = CardDefaults.cardColors(containerColor = secondaryBackground),
+            border = BorderStroke(1.dp, AppleBlue.copy(alpha = 0.15f))
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -222,3 +231,155 @@ fun StatsScreen(
         Spacer(Modifier.height(48.dp))
     }
 }
+
+@Composable
+private fun AttributeRadarChart(profile: UserProfile) {
+    val stats = listOf(
+        "STR" to profile.str.toFloat(),
+        "AGI" to profile.agi.toFloat(),
+        "INT" to profile.int.toFloat(),
+        "VIT" to profile.vit.toFloat(),
+        "SEN" to profile.sen.toFloat()
+    )
+
+    val chartBlue = AppleBlue
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp),
+        shape = RoundedCornerShape(0.dp),
+        colors = CardDefaults.cardColors(containerColor = DisciplineNavy),
+        border = BorderStroke(1.dp, chartBlue.copy(alpha = 0.15f))
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "PLAYER ATTRIBUTES",
+                color = TextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(240.dp)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                val labelPaint = remember {
+                    android.graphics.Paint().apply {
+                        color = android.graphics.Color.WHITE
+                        textSize = 34f
+                        textAlign = android.graphics.Paint.Align.CENTER
+                        typeface = android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD)
+                    }
+                }
+
+                androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                    val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+                    val radius = size.width / 2.3f
+                    val numPoints = 5
+                    val angleStep = (2 * Math.PI / numPoints).toFloat()
+
+                    // Draw concentric pentagons (grid web)
+                    val numWebLevels = 4
+                    for (level in 1..numWebLevels) {
+                        val levelRadius = radius * (level.toFloat() / numWebLevels)
+                        val path = androidx.compose.ui.graphics.Path()
+                        for (i in 0 until numPoints) {
+                            val angle = i * angleStep - (Math.PI / 2).toFloat()
+                            val x = center.x + levelRadius * Math.cos(angle.toDouble()).toFloat()
+                            val y = center.y + levelRadius * Math.sin(angle.toDouble()).toFloat()
+                            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                        }
+                        path.close()
+                        drawPath(
+                            path = path,
+                            color = chartBlue.copy(alpha = 0.12f),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
+                        )
+                    }
+
+                    // Draw axis lines from center to outer vertices
+                    for (i in 0 until numPoints) {
+                        val angle = i * angleStep - (Math.PI / 2).toFloat()
+                        val x = center.x + radius * Math.cos(angle.toDouble()).toFloat()
+                        val y = center.y + radius * Math.sin(angle.toDouble()).toFloat()
+                        drawLine(
+                            color = chartBlue.copy(alpha = 0.2f),
+                            start = center,
+                            end = androidx.compose.ui.geometry.Offset(x, y),
+                            strokeWidth = 1.dp.toPx()
+                        )
+
+                        // Draw stat label text
+                        val label = stats[i].first
+                        val labelRadius = radius + 20.dp.toPx()
+                        val lx = center.x + labelRadius * Math.cos(angle.toDouble()).toFloat()
+                        val ly = center.y + labelRadius * Math.sin(angle.toDouble()).toFloat() + 4.dp.toPx()
+                        drawContext.canvas.nativeCanvas.drawText(
+                            label,
+                            lx,
+                            ly,
+                            labelPaint
+                        )
+                    }
+
+                    // Draw player attribute filled polygon
+                    val playerPath = androidx.compose.ui.graphics.Path()
+                    val maxVal = 50f // baseline max reference
+                    for (i in 0 until numPoints) {
+                        val statVal = stats[i].second.coerceIn(0f, maxVal)
+                        val statRadius = radius * (statVal / maxVal)
+                        val angle = i * angleStep - (Math.PI / 2).toFloat()
+                        val x = center.x + statRadius * Math.cos(angle.toDouble()).toFloat()
+                        val y = center.y + statRadius * Math.sin(angle.toDouble()).toFloat()
+                        if (i == 0) playerPath.moveTo(x, y) else playerPath.lineTo(x, y)
+                    }
+                    playerPath.close()
+
+                    // Fill polygon with glowing gradient
+                    drawPath(
+                        path = playerPath,
+                        brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                            colors = listOf(chartBlue.copy(alpha = 0.45f), Color(0xFF7C3AED).copy(alpha = 0.25f)),
+                            center = center
+                        )
+                    )
+
+                    // Draw neon outline border
+                    drawPath(
+                        path = playerPath,
+                        color = chartBlue,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+                    )
+
+                    // Draw little glowing points at the vertices
+                    for (i in 0 until numPoints) {
+                        val statVal = stats[i].second.coerceIn(0f, maxVal)
+                        val statRadius = radius * (statVal / maxVal)
+                        val angle = i * angleStep - (Math.PI / 2).toFloat()
+                        val x = center.x + statRadius * Math.cos(angle.toDouble()).toFloat()
+                        val y = center.y + statRadius * Math.sin(angle.toDouble()).toFloat()
+                        drawCircle(
+                            color = Color.White,
+                            radius = 3.5.dp.toPx(),
+                            center = androidx.compose.ui.geometry.Offset(x, y)
+                        )
+                        drawCircle(
+                            color = chartBlue,
+                            radius = 5.5.dp.toPx(),
+                            center = androidx.compose.ui.geometry.Offset(x, y),
+                            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.5.dp.toPx())
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+

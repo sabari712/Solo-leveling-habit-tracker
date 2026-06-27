@@ -94,7 +94,7 @@ fun MeditationScreen(
         if (isRunning) {
             isRunning = false
             sessionComplete = true
-            repository.awardXP(selectedDuration * 10)
+            repository.completeMeditationSession(selectedDuration)
         }
     }
 

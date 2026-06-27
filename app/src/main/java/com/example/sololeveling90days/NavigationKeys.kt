@@ -51,4 +51,24 @@ object AdditionalTasksKey : NavKey
 @Serializable
 data class QuestDetailKey(val questId: String) : NavKey
 
+@Serializable
+object WorkoutLibraryKey : NavKey
+
+@Serializable
+data class ExerciseCameraKey(val exerciseTypeName: String, val targetReps: Int, val questId: String = "") : NavKey
+
+@Serializable
+data class ExerciseResultKey(
+    val exerciseTypeName: String,
+    val repsCompleted: Int,
+    val targetReps: Int,
+    val durationSeconds: Long,
+    val wasVerified: Boolean,
+    val questId: String = ""
+) : NavKey
+
+@Serializable
+object TdeeKey : NavKey
+
+
 

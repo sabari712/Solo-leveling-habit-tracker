@@ -116,6 +116,7 @@ fun FocusTimerScreen(
             override fun onFinish() {
                 isRunning = false
                 millisRemaining = 0L
+                val wasWorkMode = (mode == TimerMode.WORK)
                 mode = if (mode == TimerMode.WORK) TimerMode.BREAK else TimerMode.WORK
                 val nextMins = if (mode == TimerMode.BREAK) breakMinutes else workMinutes
                 millisRemaining = nextMins * 60 * 1000L
@@ -127,6 +128,9 @@ fun FocusTimerScreen(
                         mode = mode.name,
                         remaining = millisRemaining
                     )
+                    if (wasWorkMode) {
+                        repository.completeFocusSession()
+                    }
                 }
             }
         }.start()

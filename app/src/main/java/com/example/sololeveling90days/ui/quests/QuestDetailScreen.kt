@@ -1,4 +1,5 @@
 package com.example.sololeveling90days.ui.quests
+import com.example.sololeveling90days.theme.*
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -141,7 +142,7 @@ fun QuestDetailScreen(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = secondaryBackground),
-                    border = BorderStroke(1.dp, Color(0xFF38383A))
+                    border = BorderStroke(1.dp, AppleBlue.copy(alpha = 0.15f))
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -168,7 +169,7 @@ fun QuestDetailScreen(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = secondaryBackground),
-                    border = BorderStroke(1.dp, Color(0xFF38383A))
+                    border = BorderStroke(1.dp, AppleBlue.copy(alpha = 0.15f))
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -223,7 +224,7 @@ fun QuestDetailScreen(
                     val dateStr = day.toString()
                     val isCompleted = completions.contains(dateStr)
 
-                    val containerColor = if (isCompleted) appleBlue else Color(0xFF1C1C1E)
+                    val containerColor = if (isCompleted) appleBlue else DisciplineNavy
                     val contentColor = if (isCompleted) Color.White else label
 
                     Box(
@@ -273,7 +274,7 @@ fun QuestDetailScreen(
                     .navigationBarsPadding(),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isTodayCompleted) Color(0xFF2C2C2E) else appleBlue,
+                    containerColor = if (isTodayCompleted) AppleBlue.copy(alpha = 0.15f) else appleBlue,
                     contentColor = Color.White
                 )
             ) {

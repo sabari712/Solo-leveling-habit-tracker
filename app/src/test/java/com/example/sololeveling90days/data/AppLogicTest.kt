@@ -1,4 +1,4 @@
-﻿package com.example.sololeveling90days.data
+package com.example.sololeveling90days.data
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -49,5 +49,7 @@ class AppLogicTest {
         // Level 3 (1500 to 3000)
         assertEquals(0f, xpProgressInLevel(1500), 0.001f)
         assertEquals(0.333f, xpProgressInLevel(2000), 0.01f) // (2000 - 1500) / 1500 = 0.333
+    }
+
     }
 }

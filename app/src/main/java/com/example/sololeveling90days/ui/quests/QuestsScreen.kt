@@ -1,4 +1,4 @@
-﻿package com.example.sololeveling90days.ui.quests
+package com.example.sololeveling90days.ui.quests
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -22,6 +22,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
+import com.example.sololeveling90days.WorkoutLibraryKey
+import com.example.sololeveling90days.ExerciseCameraKey
 import com.example.sololeveling90days.data.*
 import com.example.sololeveling90days.theme.*
 import kotlinx.coroutines.launch
@@ -50,6 +53,7 @@ private fun categoryColor(category: QuestCategory): Color = when (category) {
 @Composable
 fun QuestsScreen(
     repository: AppRepository,
+    onNavigate: (NavKey) -> Unit,
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -84,16 +88,33 @@ fun QuestsScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    showAddSheet = true
-                },
-                containerColor = GrowthEmerald,
-                contentColor = Color.White,
-                shape = CircleShape,
-                modifier = Modifier.navigationBarsPadding()
+            Row(
+                modifier = Modifier.navigationBarsPadding(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Quest")
+                // Browse Workouts Library FAB
+                FloatingActionButton(
+                    onClick = {
+                        onNavigate(WorkoutLibraryKey)
+                    },
+                    containerColor = Color(0xFF7C3AED), // NeonPurple
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Filled.FitnessCenter, contentDescription = "Browse Workouts")
+                }
+
+                // Add Custom Quest FAB
+                FloatingActionButton(
+                    onClick = {
+                        showAddSheet = true
+                    },
+                    containerColor = GrowthEmerald,
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add Quest")
+                }
             }
         }
     ) { paddingValues ->
@@ -157,6 +178,17 @@ fun QuestsScreen(
                             },
                             onDelete = {
                                 scope.launch { repository.removeQuest(quest.id) }
+                            },
+                            onVerify = {
+                                quest.exerciseType?.let { type ->
+                                    onNavigate(
+                                        ExerciseCameraKey(
+                                            exerciseTypeName = type.name,
+                                            targetReps = quest.targetReps,
+                                            questId = quest.id
+                                        )
+                                    )
+                                }
                             }
                         )
                     }
@@ -330,7 +362,8 @@ private fun CompleteDayButton(onClick: () -> Unit) {
 private fun QuestItem(
     quest: Quest,
     onToggle: (Boolean) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onVerify: (() -> Unit)? = null
 ) {
     val catColor = categoryColor(quest.category)
     val contentAlpha = if (quest.isCompleted) 0.55f else 1f
@@ -338,7 +371,13 @@ private fun QuestItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onToggle(!quest.isCompleted) },
+            .clickable { 
+                if (quest.exerciseType != null && !quest.isCompleted && onVerify != null) {
+                    onVerify()
+                } else {
+                    onToggle(!quest.isCompleted)
+                }
+            },
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(1.dp, SteelGray.copy(alpha = 0.2f)),
         colors = CardDefaults.cardColors(containerColor = DisciplineNavy)
@@ -403,7 +442,7 @@ private fun QuestItem(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Right side: delete + checkbox column
+            // Right side: delete + verify + checkbox column
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -421,10 +460,41 @@ private fun QuestItem(
                     )
                 }
 
+                // Verify with camera button
+                if (quest.exerciseType != null && !quest.isCompleted && onVerify != null) {
+                    IconButton(
+                        onClick = onVerify,
+                        modifier = Modifier.size(30.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Videocam,
+                            contentDescription = "Verify with camera",
+                            tint = Color(0xFF4FC3F7), // NeonBlue
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                // Verified completion badge
+                if (quest.exerciseType != null && quest.isCompleted && quest.isVerified) {
+                    Icon(
+                        imageVector = Icons.Filled.Verified,
+                        contentDescription = "Verified completion",
+                        tint = Color(0xFF00E676), // GoodGreen
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
                 // Completion checkbox
                 Checkbox(
                     checked = quest.isCompleted,
-                    onCheckedChange = { onToggle(it) },
+                    onCheckedChange = { checked ->
+                        if (quest.exerciseType != null && !quest.isCompleted && onVerify != null) {
+                            onVerify()
+                        } else {
+                            onToggle(checked)
+                        }
+                    },
                     colors = CheckboxDefaults.colors(
                         checkedColor = GrowthEmerald,
                         uncheckedColor = TextMuted,

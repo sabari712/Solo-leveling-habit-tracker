@@ -1,10 +1,13 @@
 package com.example.sololeveling90days.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 
 private val SoloLeveling90DaysDarkColorScheme = darkColorScheme(
     primary = StaticAppleBlueDark,
@@ -62,6 +65,11 @@ fun SoloLeveling90DaysTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes(
+            small = RoundedCornerShape(0.dp),
+            medium = RoundedCornerShape(0.dp),
+            large = RoundedCornerShape(0.dp)
+        ),
         content = content
     )
 }

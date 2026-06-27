@@ -53,7 +53,7 @@ val SYSTEM_MESSAGES = listOf(
     SystemMessage("gate_pass_used", "[SYSTEM]: Gate Pass consumed. Streak protected. Do not fail again."),
 )
 
-fun getQuestsForGoal(goalString: String): List<Quest> {
+fun getQuestsForGoal(goalString: String, dayNumber: Int = 1): List<Quest> {
     val selectedGoals = goalString.split(",").map { it.trim() }.filter { it.isNotEmpty() }
     val compiledQuests = mutableListOf<Quest>()
     
@@ -63,11 +63,22 @@ fun getQuestsForGoal(goalString: String): List<Quest> {
         }
     }
     
+    // Inject Boss Quest on Boss Days
+    if (isBossDay(dayNumber)) {
+        val bossQuest = getBossQuest(dayNumber)
+        compiledQuests.add(bossQuest)
+    }
+    
     selectedGoals.forEach { goal ->
         when (goal) {
             "Build Fitness" -> {
-                addUnique(Quest("fit1", "Workout / Exercise", "30+ minutes of physical activity", 100, QuestCategory.FITNESS, difficulty = QuestDifficulty.HARD))
-                addUnique(Quest("fit2", "Stretching Routine", "10 minutes of morning or evening stretching", 40, QuestCategory.FITNESS, difficulty = QuestDifficulty.NORMAL))
+                addUnique(Quest("fit_pushups", "Push-ups", "10 reps - Lower chest to ground, then push back up.", 100, QuestCategory.FITNESS, difficulty = QuestDifficulty.HARD, exerciseType = ExerciseType.PUSHUPS, targetReps = 10))
+                addUnique(Quest("fit_squats", "Squats", "15 reps - Lower hips until thighs parallel, then stand.", 80, QuestCategory.FITNESS, difficulty = QuestDifficulty.NORMAL, exerciseType = ExerciseType.SQUATS, targetReps = 15))
+            }
+            "Bodyweight Training" -> {
+                addUnique(Quest("body_pushups", "Push-ups", "10 reps - Lower chest to ground, then push back up.", 100, QuestCategory.FITNESS, difficulty = QuestDifficulty.HARD, exerciseType = ExerciseType.PUSHUPS, targetReps = 10))
+                addUnique(Quest("body_squats", "Squats", "15 reps - Lower hips until thighs parallel, then stand.", 80, QuestCategory.FITNESS, difficulty = QuestDifficulty.NORMAL, exerciseType = ExerciseType.SQUATS, targetReps = 15))
+                addUnique(Quest("body_plank", "Plank", "30 seconds - Hold plank position with body straight.", 100, QuestCategory.FITNESS, difficulty = QuestDifficulty.HARD, exerciseType = ExerciseType.PLANK, targetReps = 30))
             }
             "Fix Sleep" -> {
                 addUnique(Quest("sleep1", "Sleep Before 11PM", "Get at least 7 hours of sleep", 80, QuestCategory.SLEEP, difficulty = QuestDifficulty.HARD))

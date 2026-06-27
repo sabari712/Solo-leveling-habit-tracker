@@ -46,7 +46,10 @@ private data class QuestDb(
     val category: String,
     val is_completed: Boolean,
     val is_active: Boolean,
-    val difficulty: String
+    val difficulty: String,
+    val exercise_type: String? = null,
+    val target_reps: Int = 0,
+    val is_verified: Boolean = false
 )
 
 @Serializable
@@ -68,7 +71,11 @@ private data class JoggingSessionDb(
     val date: String,
     val distance_km: Float,
     val duration_seconds: Long,
-    val route_points: String
+    val route_points: String,
+    val activity_type: String? = null,
+    val calories_burned: Int? = null,
+    val avg_pace_seconds_per_km: Int? = null,
+    val xp_earned: Int? = null
 )
 
 @Serializable
@@ -174,7 +181,10 @@ class SyncManager(
                     category = it.category.name,
                     is_completed = it.isCompleted,
                     is_active = it.isActive,
-                    difficulty = it.difficulty.name
+                    difficulty = it.difficulty.name,
+                    exercise_type = it.exerciseType?.name,
+                    target_reps = it.targetReps,
+                    is_verified = it.isVerified
                 )
             }
             if (dbQuests.isNotEmpty()) {
@@ -225,7 +235,11 @@ class SyncManager(
                     date = it.date,
                     distance_km = it.distanceKm,
                     duration_seconds = it.durationSeconds,
-                    route_points = json.encodeToString(it.routePoints)
+                    route_points = json.encodeToString(it.routePoints),
+                    activity_type = it.activityType.name,
+                    calories_burned = it.caloriesBurned,
+                    avg_pace_seconds_per_km = it.avgPaceSecondsPerKm,
+                    xp_earned = it.xpEarned
                 )
             }
             if (dbSessions.isNotEmpty()) {
@@ -378,7 +392,10 @@ class SyncManager(
                         category = try { QuestCategory.valueOf(it.category) } catch(e: Exception) { QuestCategory.WELLNESS },
                         isCompleted = it.is_completed,
                         isActive = it.is_active,
-                        difficulty = try { QuestDifficulty.valueOf(it.difficulty) } catch(e: Exception) { QuestDifficulty.NORMAL }
+                        difficulty = try { QuestDifficulty.valueOf(it.difficulty) } catch(e: Exception) { QuestDifficulty.NORMAL },
+                        exerciseType = it.exercise_type?.let { typeStr -> try { ExerciseType.valueOf(typeStr) } catch(e: Exception) { null } },
+                        targetReps = it.target_reps,
+                        isVerified = it.is_verified
                     )
                 }
                 context.dataStore.edit { prefs ->
@@ -422,7 +439,11 @@ class SyncManager(
                         date = it.date,
                         distanceKm = it.distance_km,
                         durationSeconds = it.duration_seconds,
-                        routePoints = try { json.decodeFromString<List<LatLngPoint>>(it.route_points) } catch(e: Exception) { emptyList() }
+                        routePoints = try { json.decodeFromString<List<LatLngPoint>>(it.route_points) } catch(e: Exception) { emptyList() },
+                        activityType = it.activity_type?.let { t -> try { ActivityType.valueOf(t) } catch(_: Exception) { ActivityType.JOGGING } } ?: ActivityType.JOGGING,
+                        caloriesBurned = it.calories_burned ?: 0,
+                        avgPaceSecondsPerKm = it.avg_pace_seconds_per_km ?: 0,
+                        xpEarned = it.xp_earned ?: 0
                     )
                 }
                 context.dataStore.edit { prefs ->
